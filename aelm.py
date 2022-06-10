@@ -16,6 +16,7 @@
 # IMPORTS
 # ============================================================================
 # import subprocess
+import os
 
 import exma
 
@@ -30,7 +31,7 @@ def aelm(biased_traj, minimizations_output, cell_info):
     Parameters
     ----------
     biased_traj : str
-        filename of the biased trajectory
+        filename of the xyz file with the biased trajectory
 
     minimizations_output : str
         filename where the last frame of each minimization will be written
@@ -55,20 +56,28 @@ def aelm(biased_traj, minimizations_output, cell_info):
                 frame.box = cell_info["box"]
                 frame.idx = np.arange(1, frame.natoms + 1)
                 frame.types = [cell_info["type"][t] for t in frame.types]
+                frame.q = np.zeros(frame.natoms, dtype=np.float32)
 
                 exma.io.writer.in_lammps("in.frame", frame)
 
                 # run lammps minimization and get the energy data and last
                 # frame of the structure:
-                #
-                # os.system("./lmp_serial -in in.minimization")
-                # os.system(
-                #     "awk '/Energy\ initial/,/Force\ two-norm/' log.lammps |"
-                #     "sed '1d; $d' >> emin.dat")
-                # os.system(
-                #     "tail -%s dump.minimization.lammpstrj >> "
-                #     "dump.all.lammpstrj" % (N+9))
-                # os.system("rm in.frame dump.minimization.lammpstrj log.*")
+                os.system("./lmp_serial -in in.minimization")
+                os.system(
+                    "awk '/Energy\ initial/,/Force\ two-norm/' log.lammps | sed '1d; $d' > emin.dat"
+                )
+                os.system(
+                    f"tail -{frame.natoms + 9} dump.minimization.lammpstrj >> dump.all.lammpstrj"
+                )
+
+                e1, e2, e3 = np.loadtxt("emin.dat", unpack=True, dtype=np.float32)
+
+                initial.append(e1)
+                next_to_last.append(e2)
+                final.append(e3)
+
+                os.system("rm in.frame dump.minimization.lammpstrj log.* emin.dat")
+
         except EOFError:
             ...
 
