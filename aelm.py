@@ -13,10 +13,16 @@
 """Accelerated exploration of local minima."""
 
 # ============================================================================
+# CONSTANTS
+# ============================================================================
+
+__version__ = "0.0.1"
+
+# ============================================================================
 # IMPORTS
 # ============================================================================
-# import subprocess
 import os
+import subprocess
 
 import exma
 
@@ -31,6 +37,7 @@ def aelm(
     cell_info,
     lmp_exec="./lmp",
     lmp_in="in.minimization",
+    lmp_data="in.frame",
     lmp_min="dump.minimization.lammpstrj",
     lmp_flags=None,
 ):
@@ -59,6 +66,9 @@ def aelm(
     lmp_min : str, default="dump.minimization.lammpstrj"
         the dump file where the local minimization is written
 
+    lmp_in : str, default="in.minimization"
+        the file with the frame to be minimized by LAMMPS
+
     lmp_flags : dict, default=None
         command-line options for LAMMPS, where the key is the flag and the value
         the option.
@@ -83,23 +93,22 @@ def aelm(
                 frame.q = np.zeros(frame.natoms, dtype=np.float32)
 
                 # write the frame to a configurations input file for lammps
-                exma.io.writer.in_lammps("in.frame", frame)
+                exma.io.writer.in_lammps(lmp_data, frame)
 
                 # run lammps minimization with the corresponding flags
-                run_cmd = f"{lmp_exec} -in {lmp_in}"
+                run_cmd = [lmp_exec, "-in", lmp_in]
                 if lmp_flags is not None:
                     for key, value in lmp_flags.items():
-                        if key != "screen" and value != "none":
-                            run_cmd += f" -{key} {value}"
-                os.system(run_cmd)
+                        if key != "screen":
+                            run_cmd.append(f"-{key}")
+                            run_cmd.append(value)
+                lmp_run = subprocess.run(run_cmd, capture_output=True, text=True)
+                log = lmp_run.stdout.split("\n")
 
                 # get the energies and save for the pd.DataFrame
-                os.system(
-                    f"awk '/Energy\ initial/,/Force\ two-norm/' log.lammps | sed '1d; $d' > emin.dat"
-                )
-                e1, e2, e3 = np.loadtxt(
-                    "emin.dat", unpack=True, dtype=np.float32
-                )
+                for line, next_line in zip(log, log[1:] + [log[0]]):
+                    if line.strip().startswith("Energy"):
+                        e1, e2, e3 = next_line.strip().split()
                 initial.append(e1)
                 next_to_last.append(e2)
                 final.append(e3)
@@ -110,7 +119,8 @@ def aelm(
                 )
 
                 # remove tmp files
-                os.system("rm in.frame {lmp_min} log.* emin.dat")
+                for file in [lmp_data, lmp_min, "log.cite", "log.lammps"]:
+                    os.remove(file)
 
         except EOFError:
             ...
