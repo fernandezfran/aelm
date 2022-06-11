@@ -16,7 +16,7 @@ df = aelm(
 ```
 
 In this example you need an executable of [LAMMPS](https://www.lammps.org/), 
-`lmp`, and its input file with the minimization script
+_lmp_, and its input file with the minimization script, _in.minimization_.
 
 
 ## Requirements
