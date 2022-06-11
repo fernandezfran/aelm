@@ -1,0 +1,3 @@
+include *.py LICENSE README.md
+
+exclude tox.ini pyproject.toml

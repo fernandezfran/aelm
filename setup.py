@@ -33,11 +33,7 @@ REQUIREMENTS = [
     "pandas",
 ]
 
-with open(PATH / "aelm.py") as fp:
-    for line in fp.readlines():
-        if line.startswith("__version__ = "):
-            VERSION = line.split("=", 1)[-1].replace('"', "").strip()
-            break
+VERSION = "0.0.1"
 
 with open("README.md") as fp:
     LONG_DESCRIPTION = fp.read()
@@ -50,7 +46,7 @@ with open("README.md") as fp:
 setup(
     name="aelm",
     version=VERSION,
-    description="Perform arrhenius plots for diffusion coefficients",
+    description="Accelerated exploration of local minima",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     author="Francisco Fernandez",

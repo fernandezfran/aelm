@@ -13,12 +13,6 @@
 """Accelerated exploration of local minima."""
 
 # ============================================================================
-# CONSTANTS
-# ============================================================================
-
-__version__ = "0.0.1"
-
-# ============================================================================
 # IMPORTS
 # ============================================================================
 import os
@@ -70,8 +64,8 @@ def aelm(
         the file with the frame to be minimized by LAMMPS
 
     lmp_flags : dict, default=None
-        command-line options for LAMMPS, where the key is the flag and the value
-        the option.
+        command-line options for LAMMPS, where the key is the flag and the
+        value the option.
 
     Returns
     -------
@@ -102,7 +96,9 @@ def aelm(
                         if key != "screen":
                             run_cmd.append(f"-{key}")
                             run_cmd.append(value)
-                lmp_run = subprocess.run(run_cmd, capture_output=True, text=True)
+                lmp_run = subprocess.run(
+                    run_cmd, capture_output=True, text=True
+                )
                 log = lmp_run.stdout.split("\n")
 
                 # get the energies and save for the pd.DataFrame
