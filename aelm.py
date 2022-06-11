@@ -113,7 +113,8 @@ def aelm(
                 # idk how to generalize this line if i dont want to use
                 # tail or os.system
                 os.system(
-                    f"tail -{frame.natoms + 9} {lmp_min} >> dump.all.lammpstrj"
+                    f"tail -{frame.natoms + 9} {lmp_min}"
+                    f" >> {minimizations_output}"
                 )
 
                 # remove tmp files
