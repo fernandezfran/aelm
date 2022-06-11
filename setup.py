@@ -33,7 +33,11 @@ REQUIREMENTS = [
     "pandas",
 ]
 
-VERSION = "0.0.1"
+with open(PATH / "aelm.py") as fp:
+    for line in fp.readlines():
+        if line.startswith("__version__ = "):
+            VERSION = line.split("=", 1)[-1].replace('"', "").strip()
+            break
 
 with open("README.md") as fp:
     LONG_DESCRIPTION = fp.read()
