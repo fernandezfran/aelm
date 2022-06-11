@@ -1,6 +1,10 @@
 # aelm
 
-**a**ccelerated **e**xploration of **l**ocal **m**inima.
+The **a**ccelerated **e**xploration of **l**ocal **m**inima is a fast and 
+effective method to find relevant minima in which an energy bias function is used 
+to overcome the energetic barriers followed by local minimization. **aelm** 
+provides a function to obtain these minimized values and the associated 
+structures by doing minimizations from a biased trajectory with lammps.
 
 
 ## Usage
