@@ -3,5 +3,6 @@ aelm.egg-info/
 example/borrar.xyz
 example/ffield.reax
 example/lmp
+example/dump.lammpstrj
 __pycache__/
 .tox/

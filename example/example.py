@@ -20,5 +20,5 @@ df.to_csv("example.csv", index=False)
 df.plot.hist(column=["initial", "final"], bins=75)
 
 plt.xlabel("Energy")
-plt.savefig("example.png", dpi=600)
+plt.savefig("example.png", dpi=200)
 plt.show()

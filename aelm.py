@@ -46,6 +46,9 @@ def aelm(
 ):
     """Accelerated exploration of local minima minimization.
 
+    This function takes care of the local minimization of AELM after obtaining
+    the biased trajectory [1]_.
+
     Parameters
     ----------
     biased_traj : str
@@ -97,6 +100,14 @@ def aelm(
         A problem has occurred, it may be because the LAMMPS simulation has
         not finished correctly or the log file does not correspond to a
         minimization.
+
+    References
+    ----------
+    .. [1] Fernandez, F., Paz, S.A., Otero, M., Barraco, D. and Leiva, E.P.,
+       2021. Characterization of amorphous Li x Si structures from ReaxFF via
+       accelerated exploration of local minima. `Physical Chemistry Chemical
+       Physics`, 23(31), pp.16776-16784.
+
     """
     if verbose:
         k = 0
