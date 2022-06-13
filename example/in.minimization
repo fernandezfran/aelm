@@ -1,0 +1,16 @@
+units real
+boundary p p p
+atom_style charge
+read_data in.frame
+group Si type 1
+group Li type 2
+mass 1 28.0855
+mass 2 6.941
+pair_style reax/c NULL
+pair_coeff * * ffield.reax Si Li
+fix 14 all qeq/reax 1 0.0 10.0 1.0e-6 reax/c
+thermo 10000
+thermo_style custom step press pe
+thermo_modify flush yes
+dump 18 all custom 10000 dump.minimization.lammpstrj id type q x y z
+minimize 1.0e-7 1.0e-7 1000 100000
