@@ -1,5 +1,7 @@
 # aelm
 
+[![Github Actions CI](https://github.com/fernandezfran/aelm/actions/workflows/ci.yml/badge.svg)](https://github.com/fernandezfran/aelm/actions/workflows/ci.yml)
+
 **aelm** provides a function to find relevant energy minima and associated 
 structures by performing local minimizations from a biased trajectory with LAMMPS.
 
