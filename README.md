@@ -1,10 +1,7 @@
 # aelm
 
-The **a**ccelerated **e**xploration of **l**ocal **m**inima is a fast and 
-effective method to find relevant minima in which an energy bias function is used 
-to overcome the energetic barriers followed by local minimization. **aelm** 
-provides a function to obtain these minimized values and the associated 
-structures by doing minimizations from a biased trajectory with lammps.
+**aelm** provides a function to find relevant energy minima and associated 
+structures by performing local minimizations from a biased trajectory with LAMMPS.
 
 
 ## Usage
@@ -20,12 +17,14 @@ df = aelm(
 ```
 
 In this example you need an executable of [LAMMPS](https://www.lammps.org/), 
-_lmp_, and its input file with the minimization script, _in.minimization_.
+_lmp_, its input file with the minimization script, _in.minimization_, and a 
+biased trajectory, _biased_traj.xyz_ (that can be simulated, for example, with 
+[GEMS](https://github.com/alexispaz/GEMS)) in the same directory as the script.
 
 
 ## Requirements
 
-You need Python 3.9+ to run aelm and an executable of LAMMPS.
+You need Python 3.9+ and an executable of LAMMPS to run aelm.
 
 
 ## Installation
