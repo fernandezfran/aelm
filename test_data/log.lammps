@@ -1,0 +1,89 @@
+LAMMPS (29 Oct 2020)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (../comm.cpp:94)
+  using 1 OpenMP thread(s) per MPI task
+units real
+boundary p p p
+atom_style charge
+read_data in.frame
+Reading data file ...
+  orthogonal box = (0.0000000 0.0000000 0.0000000) to (10.609090 10.609090 10.609090)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  76 atoms
+  read_data CPU = 0.000 seconds
+group Si type 1
+16 atoms in group Si
+group Li type 2
+60 atoms in group Li
+mass 1 28.0855
+mass 2 6.941
+pair_style reax/c NULL
+pair_coeff * * ffield.reax Si Li
+WARNING: VdWaals parameters for element X indicate shielding without inner wall, but earlier elements indicate different vdWaals-method. This may cause division-by-zero errors. Keeping vdWaals-setting for earlier atoms. (../reaxc_ffield.cpp:292)
+WARNING: Changed valency_val to valency_boc for X (../reaxc_ffield.cpp:315)
+fix 14 all qeq/reax 1 0.0 10.0 1.0e-6 reax/c
+thermo 10000
+thermo_style custom step press pe
+thermo_modify flush yes
+dump 18 all custom 10000 dump.minimization.lammpstrj id type q x y z
+minimize 1.0e-7 1.0e-7 1000 100000
+WARNING: Using 'neigh_modify every 1 delay 0 check yes' setting during minimization (../min.cpp:187)
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 12
+  ghost atom cutoff = 12
+  binsize = 6, bins = 2 2 2
+  2 neighbor lists, perpetual/occasional/extra = 2 0 0
+  (1) pair reax/c, perpetual
+      attributes: half, newton off, ghost
+      pair build: half/bin/newtoff/ghost
+      stencil: half/ghost/bin/3d/newtoff
+      bin: standard
+  (2) fix qeq/reax, perpetual, copy from (1)
+      attributes: half, newton off, ghost
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 90.94 | 90.94 | 90.94 Mbytes
+Step Press PotEng 
+       0    -9038.777   -4426.5753 
+      89   -10080.796   -4810.7905 
+Loop time of 7.87073 on 1 procs for 89 steps with 76 atoms
+
+97.9% CPU use with 1 MPI tasks x 1 OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -4426.57531107183  -4810.79048271336  -4810.79047946943
+  Force two-norm initial, final = 196.98328 5.9226604
+  Force max component initial, final = 51.080215 1.7785298
+  Final line search alpha, max atom move = 3.0156420e-10 5.3634090e-10
+  Iterations, force evaluations = 89 199
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 7.5394     | 7.5394     | 7.5394     |   0.0 | 95.79
+Neigh   | 0.058985   | 0.058985   | 0.058985   |   0.0 |  0.75
+Comm    | 0.003526   | 0.003526   | 0.003526   |   0.0 |  0.04
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0.26647    | 0.26647    | 0.26647    |   0.0 |  3.39
+Other   |            | 0.002343   |            |       |  0.03
+
+Nlocal:        76.0000 ave          76 max          76 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        2569.00 ave        2569 max        2569 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:        31993.0 ave       31993 max       31993 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 31993
+Ave neighs/atom = 420.96053
+Neighbor list builds = 4
+Dangerous builds = 0
+
+Please see the log.cite file for references relevant to this simulation
+
+Total wall time: 0:00:07

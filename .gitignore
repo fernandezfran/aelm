@@ -1,3 +1,4 @@
 aelm.egg-info/
+.coverage
 __pycache__/
 .tox/
