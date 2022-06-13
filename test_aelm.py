@@ -148,6 +148,7 @@ def test_aelm_raise(mock_run):
             lmp_data=TEST_DATA / "in.frame",
             rm_tmp=False,
         )
+    os.remove(TEST_DATA / "dump.all.lammpstrj")
 
 
 @mock.patch("aelm.subprocess.run")
@@ -167,6 +168,7 @@ def test_aelm_rm_tmp(mock_run):
         lmp_min=TEST_DATA / "rm_data" / "dump.minimization.lammpstrj",
         lmp_data=TEST_DATA / "rm_data" / "in.frame",
     )
+    os.remove(TEST_DATA / "dump.all.lammpstrj")
 
     rmdir = TEST_DATA / "rm_data"
     os.system(f"cp {TEST_DATA / 'in.frame'} {rmdir}")
