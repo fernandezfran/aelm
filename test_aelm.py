@@ -43,54 +43,6 @@ ATTRS = {"stdout.split.return_value": MOCK_LOG}
 
 
 @mock.patch("aelm.subprocess.run")
-def test_aelm_raise(mock_run):
-    """Test the raise of a RuntimeError."""
-    with pytest.raises(RuntimeError):
-        mock_stdout = mock.MagicMock()
-        mock_stdout.configure_mock(
-            **{"stdout.split.return_value": "A log\n with errors".split("\n")}
-        )
-
-        mock_run.return_value = mock_stdout
-
-        aelm(
-            TEST_DATA / "test.xyz",
-            TEST_DATA / "dump.all.lammpstrj",
-            {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-            lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
-            lmp_data=TEST_DATA / "in.frame",
-            rm_tmp=False,
-        )
-
-
-@mock.patch("aelm.subprocess.run")
-def test_aelm_rm_tmp(mock_run):
-    """Test the aelm rm tmp files."""
-    mock_stdout = mock.MagicMock()
-    mock_stdout.configure_mock(**ATTRS)
-
-    mock_run.return_value = mock_stdout
-
-    os.system(f"cp {TEST_DATA / 'log.*'} .")
-
-    aelm(
-        TEST_DATA / "test.xyz",
-        TEST_DATA / "dump.all.lammpstrj",
-        {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-        lmp_min=TEST_DATA / "rm_data" / "dump.minimization.lammpstrj",
-        lmp_data=TEST_DATA / "rm_data" / "in.frame",
-    )
-
-    rmdir = TEST_DATA / "rm_data"
-    os.system(f"cp {TEST_DATA / 'in.frame'} {rmdir}")
-    os.system(f"cp {TEST_DATA / 'dump.minimization.lammpstrj'} {rmdir}")
-
-    ls = os.popen("ls").read().split("\n")
-
-    assert ("in.frame" in ls) is False
-
-
-@mock.patch("aelm.subprocess.run")
 def test_aelm_df(mock_run):
     """Test the aelm returned pd.DataFrame."""
     df_ref = pd.DataFrame(
@@ -175,3 +127,51 @@ def test_aelm_dump(mock_run):
     os.remove(TEST_DATA / "dump.all.lammpstrj")
 
     assert frames[1] == frames[0]
+
+
+@mock.patch("aelm.subprocess.run")
+def test_aelm_raise(mock_run):
+    """Test the raise of a RuntimeError."""
+    with pytest.raises(RuntimeError):
+        mock_stdout = mock.MagicMock()
+        mock_stdout.configure_mock(
+            **{"stdout.split.return_value": "A log\n with errors".split("\n")}
+        )
+
+        mock_run.return_value = mock_stdout
+
+        aelm(
+            TEST_DATA / "test.xyz",
+            TEST_DATA / "dump.all.lammpstrj",
+            {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
+            lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
+            lmp_data=TEST_DATA / "in.frame",
+            rm_tmp=False,
+        )
+
+
+@mock.patch("aelm.subprocess.run")
+def test_aelm_rm_tmp(mock_run):
+    """Test the aelm rm tmp files."""
+    mock_stdout = mock.MagicMock()
+    mock_stdout.configure_mock(**ATTRS)
+
+    mock_run.return_value = mock_stdout
+
+    os.system(f"cp {TEST_DATA / 'log.*'} .")
+
+    aelm(
+        TEST_DATA / "test.xyz",
+        TEST_DATA / "dump.all.lammpstrj",
+        {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
+        lmp_min=TEST_DATA / "rm_data" / "dump.minimization.lammpstrj",
+        lmp_data=TEST_DATA / "rm_data" / "in.frame",
+    )
+
+    rmdir = TEST_DATA / "rm_data"
+    os.system(f"cp {TEST_DATA / 'in.frame'} {rmdir}")
+    os.system(f"cp {TEST_DATA / 'dump.minimization.lammpstrj'} {rmdir}")
+
+    ls = os.popen("ls").read().split("\n")
+
+    assert ("in.frame" in ls) is False
