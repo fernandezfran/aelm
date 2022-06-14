@@ -2,7 +2,7 @@
 # CI with GitHub Actions
 # ==============================================================
 
-name: continuous integration
+name: continuous integration testing
 
 on:
   - push
