@@ -1,5 +1,6 @@
 aelm.egg-info/
 .coverage
+docs/build/
 example/.ipynb_checkpoints/
 example/borrar.xyz
 example/ffield.reax

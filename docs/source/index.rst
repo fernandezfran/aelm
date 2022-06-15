@@ -10,14 +10,6 @@ Welcome to aelm's documentation!
    :target: https://github.com/fernandezfran/aelm/actions/workflows/ci.yml
    :alt: GitHub Actions CI
 
-.. image:: https://readthedocs.org/projects/aelm/badge/?version=latest
-   :target: https://aelm.readthedocs.io/
-   :alt: ReadTheDocs
-
-.. image:: https://img.shields.io/pypi/v/aelm
-   :target: https://pypi.org/project/aelm/
-   :alt: PyPI Version
-
 
 **aelm** provides a function to find relevant energy minima and associated 
 structures by performing local minimizations from a biased trajectory with LAMMPS.
