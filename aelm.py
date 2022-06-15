@@ -31,6 +31,10 @@ import numpy as np
 
 import pandas as pd
 
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
+
 
 def aelm(
     biased_traj,
@@ -77,7 +81,7 @@ def aelm(
 
     lmp_flags : dict, default=None
         command-line options for LAMMPS, where the key is the flag and the
-        value the option.
+        value the option
 
     verbose : bool, default=True
         print on the screen each of the values obtained for the performed
@@ -89,7 +93,7 @@ def aelm(
     Returns
     -------
     pd.DataFrame
-        A `pd.DataFrame with three columsn: the initial, the next to last and
+        A `pd.DataFrame` with three columsn: the initial, the next to last and
         final energies of each frame. It also generates a lammpstrj file with
         all the minimum energy frames in the same order as the initial biased
         xyz file.
@@ -107,7 +111,6 @@ def aelm(
        2021. Characterization of amorphous Li x Si structures from ReaxFF via
        accelerated exploration of local minima. `Physical Chemistry Chemical
        Physics`, 23(31), pp.16776-16784.
-
     """
     if verbose:
         k = 0

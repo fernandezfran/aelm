@@ -1,4 +1,6 @@
 include aelm.py LICENSE README.md
 
 exclude test_aelm.py tox.ini pyproject.toml
+recursive-exclude docs *
+recursive-exclude example *
 recursive-exclude test_data *

@@ -23,6 +23,8 @@ _lmp_, its input file with the minimization script, _in.minimization_, and a
 biased trajectory, _biased_traj.xyz_ (that can be simulated, for example, with 
 [GEMS](https://github.com/alexispaz/GEMS)) in the same directory as the script.
 
+You can also check the jupyter notebook in the example folder.
+
 
 ## Requirements
 
