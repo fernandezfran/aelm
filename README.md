@@ -33,17 +33,6 @@ You need Python 3.9+ and an executable of LAMMPS to run aelm.
 
 ## Installation
 
-### Stable release
-
-To install the most recent stable release of aelm with [pip](https://pip.pypa.io/en/stable/), 
-run the following command in your termninal:
-
-```bash
-pip install aelm
-```
-
-### From sources
-
 To installing it from sources you can clone this [GitHub repo](https://github.com/fernandezfran/aelm) 
 
 ```bash
@@ -54,6 +43,20 @@ and inside your local directory install it in the following way
 
 ```bash
 pip install -e .
+```
+
+
+## Documentation
+
+You can compile the documentation and open it by executing the following 
+commands
+
+```bash
+cd docs/
+pip install -r requirements.txt
+make clean
+make html
+xdg-open build/html/index.html
 ```
 
 
