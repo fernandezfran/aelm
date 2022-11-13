@@ -48,7 +48,6 @@ def test_aelm_df(mock_run):
     df_ref = pd.DataFrame(
         {
             "initial": np.asarray([-4426.57531107183], dtype=np.float32),
-            "next_to_last": np.asarray([-4810.79048271336], dtype=np.float32),
             "final": np.asarray([-4810.79047946943], dtype=np.float32),
         }
     )
@@ -64,7 +63,6 @@ def test_aelm_df(mock_run):
         {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
         lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
         lmp_data=TEST_DATA / "in.frame",
-        rm_tmp=False,
     )
     os.remove(TEST_DATA / "dump.all.lammpstrj")
 
@@ -77,7 +75,6 @@ def test_aelm_df_flags(mock_run):
     df_ref = pd.DataFrame(
         {
             "initial": np.asarray([-4426.57531107183], dtype=np.float32),
-            "next_to_last": np.asarray([-4810.79048271336], dtype=np.float32),
             "final": np.asarray([-4810.79047946943], dtype=np.float32),
         }
     )
@@ -94,7 +91,6 @@ def test_aelm_df_flags(mock_run):
         lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
         lmp_data=TEST_DATA / "in.frame",
         lmp_flags={"sf": "omp"},
-        rm_tmp=False,
     )
     os.remove(TEST_DATA / "dump.all.lammpstrj")
 
@@ -115,7 +111,6 @@ def test_aelm_dump(mock_run):
         {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
         lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
         lmp_data=TEST_DATA / "in.frame",
-        rm_tmp=False,
     )
 
     filenames = ["dump.lammpstrj", "dump.all.lammpstrj"]
@@ -146,34 +141,4 @@ def test_aelm_raise(mock_run):
             {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
             lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
             lmp_data=TEST_DATA / "in.frame",
-            rm_tmp=False,
         )
-    os.remove(TEST_DATA / "dump.all.lammpstrj")
-
-
-@mock.patch("aelm.subprocess.run")
-def test_aelm_rm_tmp(mock_run):
-    """Test the aelm rm tmp files."""
-    mock_stdout = mock.MagicMock()
-    mock_stdout.configure_mock(**ATTRS)
-
-    mock_run.return_value = mock_stdout
-
-    os.system(f"cp {TEST_DATA / 'log.*'} .")
-
-    aelm(
-        TEST_DATA / "test.xyz",
-        TEST_DATA / "dump.all.lammpstrj",
-        {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-        lmp_min=TEST_DATA / "rm_data" / "dump.minimization.lammpstrj",
-        lmp_data=TEST_DATA / "rm_data" / "in.frame",
-    )
-    os.remove(TEST_DATA / "dump.all.lammpstrj")
-
-    rmdir = TEST_DATA / "rm_data"
-    os.system(f"cp {TEST_DATA / 'in.frame'} {rmdir}")
-    os.system(f"cp {TEST_DATA / 'dump.minimization.lammpstrj'} {rmdir}")
-
-    ls = os.popen("ls").read().split("\n")
-
-    assert ("in.frame" in ls) is False
