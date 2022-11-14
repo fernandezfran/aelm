@@ -39,8 +39,10 @@ def aelm(
     minimizations_output,
     cell_info,
     run_cmd,
+    log_run,
     to_min_frame,
     minimization_frames,
+    program,
     verbose=True,
 ):
     """Accelerated exploration of local minima minimization.
@@ -66,11 +68,17 @@ def aelm(
     run_cmd : str
         the command to run the minimization
 
+    log_run : str
+        the name of the file with the output of the program minimization.
+
     to_min_frame : str
         the file with the frame to be minimized.
 
     minimization_frames : str
         the file where the local minimization was written by the MD program.
+
+    program : str
+        'LAMMPS' or 'GEMS' are the possible values to run the minimizations.
 
     verbose : bool, default=True
         print on the screen each of the values obtained for the performed
@@ -85,6 +93,9 @@ def aelm(
 
     Raises
     ------
+    ValueError
+        If program is not 'LAMMPS' or 'GEMS'.
+
     RuntimeError
         A problem has occurred, it may be because the minimization has not
         finished correctly or the log file does not correspond to a
@@ -97,48 +108,77 @@ def aelm(
        accelerated exploration of local minima. `Physical Chemistry Chemical
        Physics`, 23(31), pp.16776-16784.
     """
+    if program not in ("LAMMPS", "GEMS"):
+        raise ValueError("program must be 'LAMMPS' or 'GEMS'")
+
     if verbose:
         k = 0
         print("# minimization number, initial energy, final energy")
 
-    initial, final = [], []
-
     bias_traj = exma.read_xyz(biased_traj)
+
+    initial, final = [], []
     min_traj = []
 
     for bias_frame in bias_traj:
-        bias_frame.box = cell_info["box"]
-        bias_frame.idx = np.arange(1, bias_frame.natoms + 1)
-        bias_frame.types = [cell_info["type"][t] for t in bias_frame.types]
-        bias_frame.q = np.zeros(bias_frame.natoms, dtype=np.float32)
 
-        exma.write_in_lammps(bias_frame, to_min_frame)
+        if program == "LAMMPS":
+            bias_frame.box = cell_info["box"]
+            bias_frame.idx = np.arange(1, bias_frame.natoms + 1)
+            bias_frame.types = [cell_info["type"][t] for t in bias_frame.types]
+            bias_frame.q = np.zeros(bias_frame.natoms, dtype=np.float32)
 
-        # run the minimization with the corresponding flags
+            exma.write_in_lammps(bias_frame, to_min_frame)
+
+        else:
+            exma.write_xyz([bias_frame], to_min_frame)
+
+        # run the minimization
         run_cmd = run_cmd.split()
         lmp_run = subprocess.run(run_cmd, capture_output=True, text=True)
-        log = lmp_run.stdout.split("\n")
 
         # get the energies and save for the pandas.DataFrame
         try:
-            for line, next_line in zip(log, log[1:] + [log[0]]):
-                if line.strip().startswith("Energy initial"):
-                    e1, e2, e3 = next_line.strip().split()
-            initial.append(e1)
-            final.append(e3)
+            if program == "LAMMPS":
+                log = lmp_run.stdout.split("\n")
+                for line, next_line in zip(log, log[1:] + [log[0]]):
+                    if line.strip().startswith("Energy initial"):
+                        ei, ebf, ef = next_line.strip().split()
+
+            elif program == "GEMS":
+                with open(log_run, "r") as f:
+                    log = f.read()
+                log = log.split("\n")
+                lbfgs_log = [
+                    line for line in log if line.strip().startswith("# LBFGS")
+                ]
+                ei = lbfgs_log[2].split()[4]
+                ef = lbfgs_log[-1].split()[4]
+
+            initial.append(ei)
+            final.append(ef)
+
         except UnboundLocalError:
             msg = "A problem occurred when obtaining the energies"
             raise RuntimeError(msg)
 
         # accumulate the minimum energy frames
-        mef = exma.read_lammpstrj(minimization_frames)[-1]
-        min_traj.append(mef._sort() if not mef._sorted() else mef)
+        if program == "LAMMPS":
+            mef = exma.read_lammpstrj(minimization_frames)[-1]
+            mef = mef._sort() if not mef._sorted() else mef
+        else:
+            mef = exma.read_xyz(minimization_frames)[-1]
+
+        min_traj.append(mef)
 
         if verbose:
-            print(k, e1, e3)
+            print(f"{k}, {ei}, {ef}")
             k += 1
 
-    exma.write_lammpstrj(min_traj, minimizations_output)
+    if program == "LAMMPS":
+        exma.write_lammpstrj(min_traj, minimizations_output)
+    else:
+        exma.write_xyz(min_traj, minimizations_output)
 
     initial = np.array(initial, dtype=np.float32)
     final = np.array(final, dtype=np.float32)
