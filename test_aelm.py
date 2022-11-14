@@ -61,36 +61,9 @@ def test_aelm_df(mock_run):
         TEST_DATA / "test.xyz",
         TEST_DATA / "dump.all.lammpstrj",
         {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-        lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
-        lmp_data=TEST_DATA / "in.frame",
-    )
-    os.remove(TEST_DATA / "dump.all.lammpstrj")
-
-    pd.testing.assert_frame_equal(result, df_ref)
-
-
-@mock.patch("aelm.subprocess.run")
-def test_aelm_df_flags(mock_run):
-    """Test the aelm returned pd.DataFrame with lmp extra flags."""
-    df_ref = pd.DataFrame(
-        {
-            "initial": np.asarray([-4426.57531107183], dtype=np.float32),
-            "final": np.asarray([-4810.79047946943], dtype=np.float32),
-        }
-    )
-
-    mock_stdout = mock.MagicMock()
-    mock_stdout.configure_mock(**ATTRS)
-
-    mock_run.return_value = mock_stdout
-
-    result = aelm(
-        TEST_DATA / "test.xyz",
-        TEST_DATA / "dump.all.lammpstrj",
-        {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-        lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
-        lmp_data=TEST_DATA / "in.frame",
-        lmp_flags={"sf": "omp"},
+        "./lmp -in in.minimization",
+        TEST_DATA / "in.frame",
+        TEST_DATA / "dump.minimization.lammpstrj",
     )
     os.remove(TEST_DATA / "dump.all.lammpstrj")
 
@@ -109,8 +82,9 @@ def test_aelm_dump(mock_run):
         TEST_DATA / "test.xyz",
         TEST_DATA / "dump.all.lammpstrj",
         {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-        lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
-        lmp_data=TEST_DATA / "in.frame",
+        "./lmp -in in.minimization",
+        TEST_DATA / "in.frame",
+        TEST_DATA / "dump.minimization.lammpstrj",
     )
 
     filenames = ["dump.lammpstrj", "dump.all.lammpstrj"]
@@ -139,6 +113,7 @@ def test_aelm_raise(mock_run):
             TEST_DATA / "test.xyz",
             TEST_DATA / "dump.all.lammpstrj",
             {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-            lmp_min=TEST_DATA / "dump.minimization.lammpstrj",
-            lmp_data=TEST_DATA / "in.frame",
+            "./lmp -in in.minimization",
+            TEST_DATA / "in.frame",
+            TEST_DATA / "dump.minimization.lammpstrj",
         )

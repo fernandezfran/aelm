@@ -38,11 +38,9 @@ def aelm(
     biased_traj,
     minimizations_output,
     cell_info,
-    lmp_exec="./lmp",
-    lmp_in="in.minimization",
-    lmp_data="in.frame",
-    lmp_min="dump.minimization.lammpstrj",
-    lmp_flags=None,
+    run_cmd,
+    to_min_frame,
+    minimization_frames,
     verbose=True,
 ):
     """Accelerated exploration of local minima minimization.
@@ -59,26 +57,20 @@ def aelm(
         filename where the last frame of each minimization will be written
 
     cell_info : dict
-        with the `box`, the lenght of the box in each direction, another
-        dictionary identified with the `type` key that has within it a
-        correspondence between the elements present in xyz file with integer
-        identification numbers, e.g. {"Si": 1, "Li": 2}
+        with the `box`, the lenght of the box in each direction, and,
+        eventually, with another dictionary identified with the `type` key that
+        has within it a correspondence between the elements present in xyz file
+        with integer identification numbers, e.g. {"Si": 1, "Li": 2}, necesary
+        for minimizations with LAMMPS.
 
-    lmp_exec : str, default="./lmp"
-        the path and name of the LAMMPS executable
+    run_cmd : str
+        the command to run the minimization
 
-    lmp_in : str, default="in.minimization"
-        the input file for LAMMPS
+    to_min_frame : str
+        the file with the frame to be minimized.
 
-    lmp_data : str, default="in.frame"
-        the file with the frame to be minimized by LAMMPS
-
-    lmp_min : str, default="dump.minimization.lammpstrj"
-        the dump file where the local minimization is written
-
-    lmp_flags : dict, default=None
-        command-line options for LAMMPS, where the key is the flag and the
-        value the option
+    minimization_frames : str
+        the file where the local minimization was written by the MD program.
 
     verbose : bool, default=True
         print on the screen each of the values obtained for the performed
@@ -87,16 +79,15 @@ def aelm(
     Returns
     -------
     pd.DataFrame
-        A `pd.DataFrame` with three columsn: the initial, the next to last and
-        final energies of each frame. It also generates a lammpstrj file with
-        all the minimum energy frames in the same order as the initial biased
-        xyz file.
+        A `pd.DataFrame` with two columsn: the initial and final energies of
+        each frame. It also generates a trajectory file with all the minimum
+        energy frames in the same order as the initial biased xyz file.
 
     Raises
     ------
     RuntimeError
-        A problem has occurred, it may be because the LAMMPS simulation has
-        not finished correctly or the log file does not correspond to a
+        A problem has occurred, it may be because the minimization has not
+        finished correctly or the log file does not correspond to a
         minimization.
 
     References
@@ -121,19 +112,14 @@ def aelm(
         bias_frame.types = [cell_info["type"][t] for t in bias_frame.types]
         bias_frame.q = np.zeros(bias_frame.natoms, dtype=np.float32)
 
-        exma.write_in_lammps(bias_frame, lmp_data)
+        exma.write_in_lammps(bias_frame, to_min_frame)
 
-        # run lammps minimization with the corresponding flags
-        run_cmd = [lmp_exec, "-in", lmp_in]
-        if lmp_flags is not None:
-            for key, value in lmp_flags.items():
-                if key != "screen":
-                    run_cmd.append(f"-{key}")
-                    run_cmd.append(value)
+        # run the minimization with the corresponding flags
+        run_cmd = run_cmd.split()
         lmp_run = subprocess.run(run_cmd, capture_output=True, text=True)
         log = lmp_run.stdout.split("\n")
 
-        # get the energies and save for the pd.DataFrame
+        # get the energies and save for the pandas.DataFrame
         try:
             for line, next_line in zip(log, log[1:] + [log[0]]):
                 if line.strip().startswith("Energy initial"):
@@ -141,15 +127,12 @@ def aelm(
             initial.append(e1)
             final.append(e3)
         except UnboundLocalError:
-            raise RuntimeError(
-                "A problem occurred when obtaining the energies"
-            )
+            msg = "A problem occurred when obtaining the energies"
+            raise RuntimeError(msg)
 
         # accumulate the minimum energy frames
-        min_frame = exma.read_lammpstrj(lmp_min)[-1]
-        min_traj.append(
-            min_frame._sort_frame() if not min_frame._sorted() else min_frame
-        )
+        mef = exma.read_lammpstrj(minimization_frames)[-1]
+        min_traj.append(mef._sort() if not mef._sorted() else mef)
 
         if verbose:
             print(k, e1, e3)
@@ -157,7 +140,7 @@ def aelm(
 
     exma.write_lammpstrj(min_traj, minimizations_output)
 
-    initial = np.asarray(initial, dtype=np.float32)
-    final = np.asarray(final, dtype=np.float32)
+    initial = np.array(initial, dtype=np.float32)
+    final = np.array(final, dtype=np.float32)
 
     return pd.DataFrame({"initial": initial, "final": final})
