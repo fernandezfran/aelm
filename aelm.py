@@ -110,6 +110,7 @@ def aelm(
     """
     if program not in ("LAMMPS", "GEMS"):
         raise ValueError("program must be 'LAMMPS' or 'GEMS'")
+    run_cmd = run_cmd.split()
 
     if verbose:
         k = 0
@@ -134,7 +135,6 @@ def aelm(
             exma.write_xyz([bias_frame], to_min_frame)
 
         # run the minimization
-        run_cmd = run_cmd.split()
         lmp_run = subprocess.run(run_cmd, capture_output=True, text=True)
 
         # get the energies and save for the pandas.DataFrame
