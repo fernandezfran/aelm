@@ -15,7 +15,9 @@ import os
 import pathlib
 from unittest import mock
 
-from aelm import aelm
+from aelm import AELM
+
+import exma
 
 import numpy as np
 
@@ -48,16 +50,7 @@ ATTRS_LAMMPS = {"stdout.split.return_value": MOCK_LOG_LAMMPS}
 def test_aelm_ve_raise():
     """Test the raise of a ValueError."""
     with pytest.raises(ValueError):
-        aelm(
-            TEST_DATA / "dummy.xyz",
-            TEST_DATA / "dummy.lammpstrj",
-            {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
-            "./dummy dummy.minimization",
-            TEST_DATA / "dummy.log",
-            TEST_DATA / "dummy_frame.xyz",
-            TEST_DATA / "dummy.lammpstrj",
-            "DUMMY_PROGRAM",
-        )
+        AELM("DUMMY_PROGRAM", ["dummy.traj"], {"dummy": "info"})
 
 
 @mock.patch("aelm.subprocess.run")
@@ -71,15 +64,18 @@ def test_aelm_re_raise(mock_run):
 
         mock_run.return_value = mock_stdout
 
-        aelm(
-            TEST_DATA_LAMMPS / "test.xyz",
-            TEST_DATA_LAMMPS / "dump.all.lammpstrj",
+        biased_traj = exma.read_xyz(TEST_DATA_LAMMPS / "test.xyz")
+
+        obj = AELM(
+            "LAMMPS",
+            biased_traj,
             {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
+        )
+        obj.run(
             "./lmp -in in.minimization",
             TEST_DATA_LAMMPS / "log.lammps",
             TEST_DATA_LAMMPS / "in.frame",
             TEST_DATA_LAMMPS / "dump.minimization.lammpstrj",
-            "LAMMPS",
         )
 
 
@@ -99,17 +95,20 @@ def test_aelm_df_lammps(mock_run):
 
     mock_run.return_value = mock_stdout
 
-    result = aelm(
-        TEST_DATA_LAMMPS / "test.xyz",
-        TEST_DATA_LAMMPS / "dump.all.lammpstrj",
+    biased_traj = exma.read_xyz(TEST_DATA_LAMMPS / "test.xyz")
+
+    obj = AELM(
+        "LAMMPS",
+        biased_traj,
         {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
+    )
+    obj.run(
         "./lmp -in in.minimization",
         TEST_DATA_LAMMPS / "log.lammps",
         TEST_DATA_LAMMPS / "in.frame",
         TEST_DATA_LAMMPS / "dump.minimization.lammpstrj",
-        "LAMMPS",
     )
-    os.remove(TEST_DATA_LAMMPS / "dump.all.lammpstrj")
+    result = obj.energies
 
     pd.testing.assert_frame_equal(result, df_ref)
 
@@ -122,15 +121,21 @@ def test_aelm_dump_lammps(mock_run):
 
     mock_run.return_value = mock_stdout
 
-    aelm(
-        TEST_DATA_LAMMPS / "test.xyz",
-        TEST_DATA_LAMMPS / "dump.all.lammpstrj",
+    biased_traj = exma.read_xyz(TEST_DATA_LAMMPS / "test.xyz")
+
+    obj = AELM(
+        "LAMMPS",
+        biased_traj,
         {"box": np.full(3, 10.60908684634919), "type": {"Si": 1, "Li": 2}},
+    )
+    obj.run(
         "./lmp -in in.minimization",
         TEST_DATA_LAMMPS / "log.lammps",
         TEST_DATA_LAMMPS / "in.frame",
         TEST_DATA_LAMMPS / "dump.minimization.lammpstrj",
-        "LAMMPS",
+    )
+    exma.write_lammpstrj(
+        obj.minimized_frames, TEST_DATA_LAMMPS / "dump.all.lammpstrj"
     )
 
     filenames = ["dump.lammpstrj", "dump.all.lammpstrj"]
@@ -156,17 +161,16 @@ def test_aelm_df_gems(mock_run):
         }
     )
 
-    result = aelm(
-        TEST_DATA_GEMS / "test.xyz",
-        TEST_DATA_GEMS / "all_gen.xyz",
-        {"box": np.full(3, 10.566048)},
+    biased_traj = exma.read_xyz(TEST_DATA_GEMS / "test.xyz")
+
+    obj = AELM("GEMS", biased_traj, {"box": np.full(3, 10.566048)})
+    obj.run(
         "./gems lbfgs.gms",
         TEST_DATA_GEMS / "lbfgs.log",
         TEST_DATA_GEMS / "to_min.xyz",
         TEST_DATA_GEMS / "traj.lbfgs.xyz",
-        "GEMS",
     )
-    os.remove(TEST_DATA_GEMS / "all_gen.xyz")
+    result = obj.energies
 
     pd.testing.assert_frame_equal(result, df_ref)
 
@@ -174,16 +178,16 @@ def test_aelm_df_gems(mock_run):
 @mock.patch("aelm.subprocess.run")
 def test_aelm_traj_gems(mock_run):
     """Test the aelm all_gen.xyz generated."""
-    aelm(
-        TEST_DATA_GEMS / "test.xyz",
-        TEST_DATA_GEMS / "all_gen.xyz",
-        {"box": np.full(3, 10.566048)},
+    biased_traj = exma.read_xyz(TEST_DATA_GEMS / "test.xyz")
+
+    obj = AELM("GEMS", biased_traj, {"box": np.full(3, 10.566048)})
+    obj.run(
         "./gems lbfgs.gms",
         TEST_DATA_GEMS / "lbfgs.log",
         TEST_DATA_GEMS / "to_min.xyz",
         TEST_DATA_GEMS / "traj.lbfgs.xyz",
-        "GEMS",
     )
+    exma.write_xyz(obj.minimized_frames, TEST_DATA_GEMS / "all_gen.xyz")
 
     filenames = ["all.xyz", "all_gen.xyz"]
     with contextlib.ExitStack() as stack:
