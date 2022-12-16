@@ -78,6 +78,7 @@ class AELM:
 
     def _with_lmp(self):
         """Minimization loop with LAMMPS."""
+        k = 0
         for bias_frame in self.biased_traj:
             bias_frame.box = self.cell_info["box"]
             bias_frame.idx = np.arange(1, bias_frame.natoms + 1)
@@ -112,13 +113,13 @@ class AELM:
             mef = exma.read_lammpstrj(self.minimization_frames)[-1]
             self.min_traj_.append(mef._sort() if not mef._sorted() else mef)
 
-            k = 0
             if self.verbose:
                 print(f"{k},{ei},{ef}")
                 k += 1
 
     def _with_gms(self):
         """Minimization loop with GEMS."""
+        k = 0
         for bias_frame in self.biased_traj:
             exma.write_xyz([bias_frame], self.to_min_frame)
 
@@ -142,7 +143,6 @@ class AELM:
             mef = exma.read_xyz(self.minimization_frames)[-1]
             self.min_traj_.append(mef)
 
-            k = 0
             if self.verbose:
                 print(f"{k},{ei},{ef}")
                 k += 1
